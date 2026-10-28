@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+evidence/
+*.csv
+.DS_Store
+demo-profiles/
+dist/
+build/

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Browser Forensics</title>
+<style>
+:root{--priv:#5a3d8a;--bg:#fafafa;--fg:#1a1a1a;--muted:#6b6b6b;--line:#d9d9d9;--panel:#fff;--accent:#1f4e79;--row:#f3f3f3;--bad:#9b1c1c;--good:#1d6b3a}
+@media (prefers-color-scheme:dark){:root{--priv:#c4a8f0;--bg:#141414;--fg:#e6e6e6;--muted:#9a9a9a;--line:#333;--panel:#1c1c1c;--accent:#8ab4e8;--row:#202020;--bad:#f28b82;--good:#81c995}}
+*{box-sizing:border-box}
+html,body{height:100%}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.top{flex:none;background:var(--bg)}
+header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px 20px;align-items:baseline}
+header h1{font-size:18px;font-weight:600;margin:0}
+header .meta{color:var(--muted);font-size:13px}
+header .meta b{color:var(--fg);font-weight:500}
+.bar{display:flex;flex-wrap:wrap;gap:8px 12px;padding:12px 20px;border-bottom:1px solid var(--line);align-items:center;background:var(--panel)}
+.bar label{color:var(--muted);font-size:12px;display:flex;flex-direction:column;gap:2px}
+input,select,button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:2px;padding:5px 8px}
+input[type=search]{min-width:260px}
+button{cursor:pointer;background:var(--panel)}
+button:hover{border-color:var(--accent)}
+.tabs{display:flex;gap:18px;margin-left:auto}
+.tabs a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.tabs a.on{color:var(--fg);border-color:var(--accent)}
+.counts{padding:8px 20px;color:var(--muted);font-size:12px;border-bottom:1px solid var(--line)}
+.counts span{margin-right:16px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 380px}
+@media (max-width:900px){main{grid-template-columns:1fr;grid-template-rows:1fr auto}aside{border-left:0;border-top:1px solid var(--line);max-height:40%}}
+section{overflow:auto;display:flex;flex-direction:column}
+section>table{flex:none}
+section>.tlwrap{flex:1}
+.pager{position:sticky;bottom:0;flex:none;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 20px;border-top:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted);margin-top:auto}
+.pager button{padding:3px 9px;font-size:12px}
+.pager button.on{border-color:var(--accent);color:var(--accent)}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager .sp{flex:1}
+.pager select{padding:3px 6px;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--panel);font-weight:600;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap}
+tbody tr:hover{background:var(--row)}
+tbody tr.sel{background:var(--row);outline:1px solid var(--accent)}
+td.t{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+td.u{max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.ty{white-space:nowrap}
+aside{border-left:1px solid var(--line);padding:16px 20px;background:var(--panel);font-size:13px;overflow:auto}
+aside h2{font-size:13px;font-weight:600;margin:0 0 10px;color:var(--muted)}
+aside dl{margin:0;display:grid;grid-template-columns:120px 1fr;gap:4px 10px}
+aside dt{color:var(--muted)}
+aside dd{margin:0;word-break:break-all}
+.day{padding:10px 20px 4px;color:var(--muted);font-size:12px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0}
+.tl{padding:5px 20px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:70px 60px 130px 1fr;gap:10px;font-size:13px;cursor:pointer}
+.tl:hover{background:var(--row)}
+.tl .t{color:var(--muted);font-variant-numeric:tabular-nums}
+.tl .u{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ok{color:var(--good)} .bad{color:var(--bad)}
+.tag{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid currentColor;border-radius:2px;font-size:11px;font-weight:600;line-height:16px;cursor:help}
+#tip{position:fixed;z-index:10;max-width:min(440px,calc(100vw - 32px));padding:6px 8px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:2px;font-size:12px;line-height:1.4;box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:none;display:none}
+.tag:focus{outline:1px solid var(--accent);outline-offset:1px}
+.tag.deleted{color:var(--bad)}
+.tag.private{color:var(--priv)}
+.empty{padding:40px 20px;color:var(--muted)}
+header h1 a{color:inherit;text-decoration:none}
+header .nav{margin-left:auto;display:flex;gap:14px;font-size:13px}
+header .nav a{color:var(--muted);text-decoration:none;padding:2px 0;border-bottom:2px solid transparent}
+header .nav a.on{color:var(--fg);border-color:var(--accent)}
+.page{flex:1;min-height:0;overflow:auto;padding:24px 32px 48px}
+.page .inner{max-width:920px}
+.page h2{font-size:16px;font-weight:600;margin:28px 0 10px}
+.page h2:first-child{margin-top:4px}
+.page p{margin:6px 0;color:var(--muted)}
+.act{display:grid;grid-template-columns:1fr auto;gap:6px 24px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.act h3{margin:0;font-size:15px;font-weight:600}
+.act p{margin:2px 0 0}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);padding:7px 14px;font-weight:500}
+button.primary:hover{opacity:.92}
+button:disabled{opacity:.5;cursor:default}
+.note{border-left:3px solid var(--accent);background:var(--panel);padding:10px 16px;margin:12px 0}
+.note b{display:block;margin-bottom:4px}
+.note ul,.page ol{margin:4px 0;padding-left:20px}
+.note li,.page ol li{margin:3px 0}
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.check small{display:block;color:var(--muted);word-break:break-all}
+.progress{margin:14px 0;font-size:13px}
+.progress div{padding:2px 0;color:var(--muted)}
+.progress .now{color:var(--fg)}
+.drop{border:1px dashed var(--line);border-radius:2px;padding:28px;text-align:center;color:var(--muted);margin-top:14px}
+.drop.over{border-color:var(--accent);color:var(--fg)}
+.page table{margin-top:6px}
+.page th{position:static}
+.muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="top">
+<header>
+  <h1><a href="#home">Browser Forensics</a></h1>
+  <span class="meta" id="case"></span>
+  <span class="meta" id="meta"></span>
+  <span class="meta" id="integrity"></span>
+  <nav class="nav"><a href="#home" id="navHome">Home</a><a href="#capture" id="navCapture">Capture the browser</a><a href="#snapshot" id="navSnapshot">Memory snapshot</a></nav>
+</header>
+<div id="caseTop">
+<div class="bar">
+  <label>Search <input type="search" id="q" placeholder="url, title, domain, cookie name"></label>
+  <label>Browser <select id="browser"><option value="">all</option></select></label>
+  <label>Type <select id="type"><option value="">all</option></select></label>
+  <label>Tag <select id="tag"><option value="">all</option><option>private</option><option>deleted</option></select></label>
+  <label>From (UTC) <input type="date" id="from"></label>
+  <label>To (UTC) <input type="date" id="to"></label>
+  <label>&nbsp;<button id="clear">Clear</button></label>
+  <label>&nbsp;<button id="csv">Export CSV</button></label>
+  <label>&nbsp;<button id="jsonx">Export JSON</button></label>
+  <label>&nbsp;<button id="verify">Verify hashes</button></label>
+  <nav class="tabs"><a href="#table" id="tabTable" class="on">Table</a><a href="#timeline" id="tabTimeline">Timeline</a></nav>
+</div>
+<div class="counts" id="counts"></div>
+</div>
+</div>
+<div class="page" id="page" hidden><div class="inner" id="pageInner"></div></div>
+<main id="caseMain">
+  <section id="view"></section>
+  <aside id="detail"><h2>Record</h2><div class="empty">Select a row.</div></aside>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+(function(){
+  var all=[], shown=[], view='table', sortKey='timestamp_utc', sortDir=1, page=0, pageSize=200, selected=null;
+  var $=function(id){return document.getElementById(id)};
+  function tagOf(r){return (r.extra&&r.extra.tag)||''}
+  function baseType(r){return tagOf(r)?r.artifact_type.replace(/^(deleted|private)_/,''):r.artifact_type}
+  function tagHtml(r){var t=tagOf(r);return t?'<span class="tag '+t+'" tabindex="0" data-tip="'+esc(r.extra.tag_source||'')+'" aria-label="'+t+': '+esc(r.extra.tag_source||'')+'">'+t+'</span>':''}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var currentCase=null, state={cases:[],platform:''}, poller=null;
+  function api(p){return fetch(p).then(function(r){return r.json()})}
+  function post(p,body){return fetch(p,{method:'POST',headers:{'Content-Type':'application/json','X-BFT':'1'},body:JSON.stringify(body||{})}).then(function(r){return r.json()})}
+  function fill(sel,values){var keep=$(sel).value;$(sel).innerHTML='<option value="">all</option>';values.forEach(function(v){var o=document.createElement('option');o.textContent=v;$(sel).appendChild(o)});$(sel).value=values.indexOf(keep)>=0?keep:''}
+  function load(name){
+    currentCase=name; all=[]; shown=[]; selected=null;
+    $('detail').innerHTML='<h2>Record</h2><div class="empty">Select a row.</div>';
+    $('view').innerHTML='<div class="empty">Loading...</div>';
+    api('/api/records?case='+encodeURIComponent(name)).then(function(d){
+      if(d.error){$('view').innerHTML='<div class="empty">'+esc(d.error)+'</div>';return}
+      all=d.records; $('case').innerHTML='Case: <b>'+esc(d.case)+'</b>';
+      $('meta').innerHTML='<b>'+d.total+'</b> records, parsed '+esc(d.generated_at_utc);
+      showIntegrity(d.verify);
+      var types={}, browsers={}; all.forEach(function(r){types[r.artifact_type]=1;browsers[r.browser]=1});
+      fill('browser',Object.keys(browsers).sort()); fill('type',Object.keys(types).sort());
+      apply();
+    });
+  }
+  function show(which){
+    var isCase=which==='case';
+    $('caseTop').hidden=!isCase; $('caseMain').style.display=isCase?'':'none'; $('page').hidden=isCase;
+    if(!isCase){$('case').textContent='';$('meta').textContent='';$('integrity').textContent=''}
+    ['Home','Capture','Snapshot'].forEach(function(n){$('nav'+n).className=(which===n.toLowerCase())?'on':''});
+  }
+  function route(){
+    var h=location.hash.replace(/^#/,'');
+    if(h.indexOf('case=')===0){show('case');load(decodeURIComponent(h.slice(5)));return}
+    if(h==='capture'){show('capture');capturePage();return}
+    if(h==='snapshot'){show('snapshot');snapshotPage();return}
+    show('home');homePage();
+  }
+  function refreshState(){return api('/api/state').then(function(d){state=d;return d})}
+  function caseOptions(includeNew){
+    return (includeNew?'<option value="">New case</option>':'')+state.cases.map(function(c){return '<option value="'+esc(c.name)+'"'+(c.name===currentCase?' selected':'')+'>'+esc(c.name)+'</option>'}).join('');
+  }
+  function homePage(){
+    refreshState().then(function(){
+      var h='<h2>Start</h2>';
+      h+='<div class="act"><div><h3>Capture the browser</h3><p>Copy and hash the Chrome and Firefox profiles on this computer, then read history, searches, bookmarks, cookies, downloads and cache, and recover deleted history.</p></div><button class="primary" id="goCapture">Capture the browser</button></div>';
+      h+='<div class="act"><div><h3>Memory snapshot</h3><p>Find pages opened in private windows, and deleted history still in RAM, in a VMware snapshot.</p></div><button id="goSnapshot">Memory snapshot</button></div>';
+      h+='<div class="act"><div><h3>Demo case</h3><p>A fictional case for practice and presentations. No real browsing is shown.</p></div><button id="goDemo">Open demo case</button></div>';
+      h+='<div class="progress" id="demoProgress"></div>';
+      h+='<h2>Cases</h2>';
+      if(!state.cases.length)h+='<p>No cases yet. Captures and scans are saved in '+esc(state.root)+'.</p>';
+      else h+='<table><thead><tr><th>Case</th><th>Records</th><th>Parsed (UTC)</th><th></th></tr></thead><tbody>'+state.cases.map(function(c){return '<tr><td>'+esc(c.name)+'</td><td>'+(c.total==null?'':c.total)+'</td><td class="t">'+esc(c.generated_at_utc||'')+'</td><td><button data-open="'+esc(c.name)+'">Open</button></td></tr>'}).join('')+'</tbody></table><p>Saved in '+esc(state.root)+'</p>';
+      $('pageInner').innerHTML=h;
+      $('goCapture').onclick=function(){location.hash='capture'};
+      $('goSnapshot').onclick=function(){location.hash='snapshot'};
+      $('goDemo').onclick=function(){
+        $('goDemo').disabled=true;
+        post('/api/demo').then(function(r){
+          if(r.error){$('demoProgress').innerHTML='<div class="bad">'+esc(r.error)+'</div>';$('goDemo').disabled=false;return}
+          watch($('demoProgress'),function(j){if(j.state==='done')location.hash='case='+j.case;else $('goDemo').disabled=false});
+        });
+      };
+      Array.prototype.forEach.call(document.querySelectorAll('[data-open]'),function(b){b.onclick=function(){location.hash='case='+encodeURIComponent(b.getAttribute('data-open'))}});
+    });
+  }
+  function watch(el,done){
+    clearInterval(poller);
+    function tick(){
+      api('/api/job').then(function(d){
+        var j=d.job; if(!j)return;
+        el.innerHTML=j.steps.map(function(t,i){return '<div class="'+(i===j.steps.length-1&&j.state==='running'?'now':'')+'">'+esc(t)+(i===j.steps.length-1&&j.state==='running'?' ...':'')+'</div>'}).join('')+(j.state==='error'?'<div class="bad">Failed: '+esc(j.error)+'</div>':'');
+        if(j.state!=='running'){clearInterval(poller);poller=null;done(j)}
+      });
+    }
+    tick(); poller=setInterval(tick,1000);
+  }
+  function capturePage(){
+    var win=state.platform.indexOf('win')===0;
+    var h='<h2>Capture the browser</h2>';
+    h+='<div class="note"><b>Before you capture</b><ul><li>Do not close the browser or any of its tabs yet.</li><li>Closing Firefox rewrites its history file, which can overwrite deleted entries the tool would otherwise recover.</li><li>Private windows exist only in memory. If they matter, take a memory snapshot first, then capture.</li>'+(win?'<li>On Windows, a running Chrome locks its history file. If a file is skipped, take the memory snapshot first, then close Chrome and capture again.</li>':'')+'</ul></div>';
+    h+='<h2>Profiles found on this computer</h2><div id="profiles"><p>Looking for Chrome and Firefox profiles...</p></div>';
+    h+='<p><button class="primary" id="captureNow" disabled>Capture now</button></p><div class="progress" id="captureProgress"></div><div id="captureResult"></div>';
+    $('pageInner').innerHTML=h;
+    refreshState().then(function(){return api('/api/profiles')}).then(function(d){
+      if(!d.profiles.length){$('profiles').innerHTML='<p>No Chrome or Firefox profile was found on this computer.</p>';return}
+      $('profiles').innerHTML=d.profiles.map(function(p,i){return '<label class="check"><input type="checkbox" checked data-path="'+esc(p.path)+'"><span><b>'+esc(p.browser==='chrome'?'Chrome':'Firefox')+'</b>, profile '+esc(p.name)+'<small>'+esc(p.path)+'</small></span></label>'}).join('');
+      $('captureNow').disabled=false;
+      $('captureNow').onclick=function(){
+        var paths=Array.prototype.filter.call(document.querySelectorAll('#profiles input'),function(c){return c.checked}).map(function(c){return c.getAttribute('data-path')});
+        if(!paths.length){$('captureResult').innerHTML='<p class="bad">Select at least one profile.</p>';return}
+        $('captureNow').disabled=true; $('captureResult').innerHTML='';
+        post('/api/capture',{profiles:paths}).then(function(r){
+          if(r.error){$('captureResult').innerHTML='<p class="bad">'+esc(r.error)+'</p>';$('captureNow').disabled=false;return}
+          watch($('captureProgress'),function(j){
+            $('captureNow').disabled=false;
+            if(j.state!=='done')return;
+            var x=j.result, h='<div class="note"><b>Captured and hashed: '+x.total+' records, integrity '+(x.passed?'PASSED':'FAILED')+'.</b>';
+            if(x.skipped.length)h+='These files could not be copied:<ul>'+x.skipped.map(function(e){return '<li>'+esc(e.source)+' ('+esc(e.error)+')</li>'}).join('')+'</ul>The browser is probably locking them. Take the memory snapshot first if you need one, then close the browser and capture again.';
+            else h+='You can close the browser now.';
+            h+='</div><p><button class="primary" id="openCapture">Open results</button></p>';
+            $('captureResult').innerHTML=h;
+            $('openCapture').onclick=function(){location.hash='case='+encodeURIComponent(j.case)};
+          });
+        });
+      };
+    });
+  }
+  function size(n){return n>=1e9?(n/1e9).toFixed(1)+' GB':Math.max(1,Math.round(n/1e6))+' MB'}
+  function scanFile(path){
+    var c=$('scanCase').value;
+    $('scanResult').innerHTML='';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-scan]'),function(b){b.disabled=true});
+    post('/api/scan',{path:path,case:c}).then(function(r){
+      if(r.error){$('scanResult').innerHTML='<p class="bad">'+esc(r.error)+'</p>';snapshotList();return}
+      watch($('scanProgress'),function(j){
+        snapshotList();
+        if(j.state!=='done')return;
+        var x=j.result;
+        $('scanResult').innerHTML='<div class="note"><b>Found '+x.private_pages+' private page(s) and '+x.private_searches+' private search(es).</b>'+(x.profile_acquired?'Deleted history still in RAM: '+x.deleted_pages+' page(s) and '+x.deleted_searches+' search(es).':'Deleted history was not checked: this case has no captured browser profile.')+'</div><p><button class="primary" id="openScan">Open results</button></p>';
+        $('openScan').onclick=function(){location.hash='case='+encodeURIComponent(j.case)};
+      });
+    });
+  }
+  function snapshotList(){
+    api('/api/snapshots').then(function(d){
+      var h;
+      if(!d.snapshots.length)h='<p>No VMware snapshot (.vmem file) was found in '+(d.searched.length?esc(d.searched.join(', ')):'the usual VMware folders')+'.</p>';
+      else h='<table><thead><tr><th>Memory file</th><th>Virtual machine</th><th>Size</th><th>Taken</th><th></th></tr></thead><tbody>'+d.snapshots.map(function(s){return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.folder.replace(/\.vmwarevm$/,''))+'</td><td>'+size(s.size)+'</td><td class="t">'+esc(s.modified)+'</td><td><button class="primary" data-scan="'+esc(s.path)+'">Scan</button></td></tr>'}).join('')+'</tbody></table>';
+      $('snapshots').innerHTML=h;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-scan]'),function(b){b.onclick=function(){scanFile(b.getAttribute('data-scan'))}});
+    });
+  }
+  function snapshotPage(){
+    var h='<h2>Memory snapshot</h2>';
+    h+='<ol><li>Leave the browser and its private window open on the virtual machine.</li><li>Take a snapshot. VMware Fusion on a Mac: Virtual Machine &rsaquo; Snapshots &rsaquo; Take Snapshot. VMware Workstation on Windows: VM &rsaquo; Snapshot &rsaquo; Take Snapshot.</li><li>Wait until VMware has finished. A virtual machine with 4 GB of memory took about five minutes. The memory is saved as a .vmem file in the virtual machine\'s folder.</li><li>Choose the snapshot below and press Scan. The file is read where it is; nothing is copied.</li></ol>';
+    h+='<div class="note"><b>What a snapshot can show</b>Pages opened in Firefox private windows are tagged private. Deleted history still in RAM is tagged deleted only when the same case also holds the captured browser profile.</div>';
+    h+='<p><label>Add the results to <select id="scanCase"></select></label> <button id="refreshSnaps">Look again</button></p>';
+    h+='<div id="snapshots"><p>Looking for snapshots...</p></div>';
+    h+='<div class="drop" id="drop">Or drop a .vmem or other memory file here</div>';
+    h+='<div class="progress" id="scanProgress"></div><div id="scanResult"></div>';
+    $('pageInner').innerHTML=h;
+    refreshState().then(function(){$('scanCase').innerHTML=caseOptions(true)});
+    $('refreshSnaps').onclick=snapshotList;
+    snapshotList();
+    var dz=$('drop');
+    dz.addEventListener('dragover',function(e){e.preventDefault();dz.className='drop over'});
+    dz.addEventListener('dragleave',function(){dz.className='drop'});
+    dz.addEventListener('drop',function(e){
+      e.preventDefault(); dz.className='drop';
+      var f=e.dataTransfer.files[0]; if(!f)return;
+      dz.textContent='Looking for '+f.name+' on this computer...';
+      post('/api/match',{name:f.name,size:f.size}).then(function(r){
+        if(r.path){dz.textContent='Found '+r.path;scanFile(r.path)}
+        else dz.textContent='Could not find '+f.name+' in the VMware, Desktop, Downloads or Documents folders. Move it into one of them and drop it again.';
+      });
+    });
+  }
+  function showIntegrity(v){
+    if(!v){$('integrity').textContent='';return}
+    $('integrity').innerHTML='Integrity: <b class="'+(v.passed?'ok':'bad')+'">'+(v.passed?'PASSED':'FAILED')+'</b> ('+v.ok.length+' ok, '+v.mismatch.length+' mismatch, '+v.missing.length+' missing'+((v.added||[]).length?', '+v.added.length+' added':'')+((v.unhashed||[]).length?', '+v.unhashed.length+' not hashed by an older version':'')+')';
+  }
+  function apply(){
+    var q=$('q').value.trim().toLowerCase(), b=$('browser').value, t=$('type').value, g=$('tag').value, f=$('from').value, to=$('to').value;
+    shown=all.filter(function(r){
+      if(b&&r.browser!==b)return false;
+      if(t&&r.artifact_type!==t)return false;
+      if(g&&tagOf(r)!==g)return false;
+      if(f&&(!r.timestamp_utc||r.timestamp_utc.slice(0,10)<f))return false;
+      if(to&&(!r.timestamp_utc||r.timestamp_utc.slice(0,10)>to))return false;
+      if(q){var hay=(r.url+' '+r.title+' '+JSON.stringify(r.extra)).toLowerCase(); if(hay.indexOf(q)<0)return false}
+      return true;
+    });
+    shown.sort(function(a,c){var x=a[sortKey]||'',y=c[sortKey]||''; return x<y?-sortDir:x>y?sortDir:0});
+    page=0; render();
+  }
+  function counts(){
+    var c={}; shown.forEach(function(r){var k=r.browser+' '+r.artifact_type;c[k]=(c[k]||0)+1});
+    $('counts').innerHTML='<span><b>'+shown.length+'</b> shown</span>'+Object.keys(c).sort().map(function(k){return '<span>'+esc(k)+' <b>'+c[k]+'</b></span>'}).join('');
+  }
+  function pageRows(rows){ if(pageSize===0)return rows; return rows.slice(page*pageSize,(page+1)*pageSize); }
+  function pager(total){
+    var pages=pageSize===0?1:Math.max(1,Math.ceil(total/pageSize)); if(page>=pages)page=pages-1;
+    var from=total?(pageSize===0?1:page*pageSize+1):0, to=pageSize===0?total:Math.min(total,(page+1)*pageSize);
+    var h='<div class="pager"><span>Showing '+from+'-'+to+' of '+total+'</span><span class="sp"></span>';
+    h+='<button data-p="0"'+(page===0?' disabled':'')+'>First</button><button data-p="'+(page-1)+'"'+(page===0?' disabled':'')+'>Prev</button>';
+    var a=Math.max(0,page-2), b=Math.min(pages-1,a+4); a=Math.max(0,b-4);
+    for(var i=a;i<=b;i++)h+='<button data-p="'+i+'" class="'+(i===page?'on':'')+'">'+(i+1)+'</button>';
+    h+='<button data-p="'+(page+1)+'"'+(page>=pages-1?' disabled':'')+'>Next</button><button data-p="'+(pages-1)+'"'+(page>=pages-1?' disabled':'')+'>Last</button>';
+    h+='<label>Rows <select id="psize">'+[100,200,500,1000,0].map(function(n){return '<option value="'+n+'"'+(n===pageSize?' selected':'')+'>'+(n||'all')+'</option>'}).join('')+'</select></label></div>';
+    return h;
+  }
+  function wirePager(){
+    Array.prototype.forEach.call(document.querySelectorAll('.pager button'),function(b){b.onclick=function(){page=+b.getAttribute('data-p');render();document.getElementById('view').scrollTop=0}});
+    var ps=document.getElementById('psize'); if(ps)ps.onchange=function(){pageSize=+ps.value;page=0;render()};
+  }
+  function render(){ counts(); view==='table'?renderTable():renderTimeline(); wirePager(); }
+  function renderTable(){
+    var cols=[['timestamp_utc','Time (UTC)'],['browser','Browser'],['artifact_type','Type'],['title','Title'],['url','URL']];
+    var h='<table><thead><tr>'+cols.map(function(c){return '<th data-k="'+c[0]+'">'+c[1]+(sortKey===c[0]?(sortDir>0?' ↑':' ↓'):'')+'</th>'}).join('')+'</tr></thead><tbody>';
+    var off=pageSize===0?0:page*pageSize;
+    pageRows(shown).forEach(function(r,i){
+      h+='<tr data-i="'+(off+i)+'"'+(selected===r?' class="sel"':'')+'><td class="t">'+esc(r.timestamp_utc||'')+'</td><td>'+esc(r.browser)+'</td><td class="ty">'+esc(baseType(r))+tagHtml(r)+'</td><td>'+esc(r.title)+'</td><td class="u" title="'+esc(r.url)+'">'+esc(r.url)+'</td></tr>';
+    });
+    h+='</tbody></table>';
+    if(!shown.length)h='<div class="empty">No records match.</div>';
+    $('view').innerHTML=h+pager(shown.length);
+    Array.prototype.forEach.call(document.querySelectorAll('th'),function(th){th.onclick=function(){var k=th.getAttribute('data-k'); if(sortKey===k)sortDir=-sortDir; else {sortKey=k;sortDir=1} apply()}});
+    Array.prototype.forEach.call(document.querySelectorAll('tbody tr'),function(tr){tr.onclick=function(){select(shown[+tr.getAttribute('data-i')])}});
+  }
+  function renderTimeline(){
+    var rows=shown.slice().sort(function(a,c){return (a.timestamp_utc||'')<(c.timestamp_utc||'')?-1:1});
+    var h='<div class="tlwrap">',day=null,off=pageSize===0?0:page*pageSize;
+    pageRows(rows).forEach(function(r,i){
+      var d=r.timestamp_utc?r.timestamp_utc.slice(0,10):'no timestamp';
+      if(d!==day){day=d;h+='<div class="day">'+esc(d)+'</div>'}
+      h+='<div class="tl" data-i="'+(off+i)+'"><span class="t">'+esc(r.timestamp_utc?r.timestamp_utc.slice(11,19):'')+'</span><span>'+esc(r.browser)+'</span><span>'+esc(baseType(r))+tagHtml(r)+'</span><span class="u">'+esc(r.title?r.title+'  ':'')+'<span style="color:var(--muted)">'+esc(r.url)+'</span></span></div>';
+    });
+    h+='</div>';
+    if(!rows.length)h='<div class="tlwrap"><div class="empty">No records match.</div></div>';
+    $('view').innerHTML=h+pager(rows.length);
+    Array.prototype.forEach.call(document.querySelectorAll('.tl'),function(el){el.onclick=function(){select(rows[+el.getAttribute('data-i')])}});
+  }
+  function select(r){
+    selected=r;
+    var h='<h2>Record</h2><dl>';
+    [['Time (UTC)',r.timestamp_utc],['Raw timestamp',r.raw_timestamp],['Timestamp source',r.timestamp_source],['Browser',r.browser],['Type',r.artifact_type],['Title',r.title],['URL',r.url],['Source file',r.source_file]].forEach(function(p){h+='<dt>'+esc(p[0])+'</dt><dd>'+esc(p[1])+'</dd>'});
+    Object.keys(r.extra||{}).forEach(function(k){var v=r.extra[k]; if(v===null||v===undefined||v==='')return; h+='<dt>'+esc(k)+'</dt><dd>'+esc(typeof v==='object'?JSON.stringify(v):v)+'</dd>'});
+    $('detail').innerHTML=h+'</dl>';
+    Array.prototype.forEach.call(document.querySelectorAll('tbody tr'),function(tr){tr.classList.toggle('sel',shown[+tr.getAttribute('data-i')]===r)});
+  }
+  function download(name,mime,text){
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+  }
+  function csvCell(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+  $('csv').onclick=function(){
+    var cols=['timestamp_utc','browser','artifact_type','title','url','raw_timestamp','timestamp_source','source_file','extra'];
+    var lines=[cols.join(',')].concat(shown.map(function(r){return cols.map(function(c){return csvCell(c==='extra'?JSON.stringify(r.extra):r[c])}).join(',')}));
+    download((currentCase||'bft')+'-export.csv','text/csv',lines.join('\n'));
+  };
+  $('jsonx').onclick=function(){download((currentCase||'bft')+'-export.json','application/json',JSON.stringify(shown,null,2))};
+  $('verify').onclick=function(){$('integrity').textContent='Verifying...';api('/api/verify?case='+encodeURIComponent(currentCase)).then(showIntegrity)};
+  $('clear').onclick=function(){$('q').value='';$('browser').value='';$('type').value='';$('tag').value='';$('from').value='';$('to').value='';apply()};
+  ['q','browser','type','tag','from','to'].forEach(function(id){$(id).addEventListener('input',apply)});
+  $('tabTable').onclick=function(e){e.preventDefault();view='table';$('tabTable').className='on';$('tabTimeline').className='';render()};
+  $('tabTimeline').onclick=function(e){e.preventDefault();view='timeline';$('tabTimeline').className='on';$('tabTable').className='';render()};
+  function showTip(el){
+    var tip=$('tip'); tip.textContent=el.getAttribute('data-tip'); tip.style.display='block';
+    var r=el.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
+    var x=Math.max(16,Math.min(r.left,window.innerWidth-w-16)), y=r.bottom+6;
+    if(y+h>window.innerHeight-8)y=r.top-h-6;
+    tip.style.left=x+'px'; tip.style.top=y+'px';
+  }
+  function hideTip(){$('tip').style.display='none'}
+  document.addEventListener('mouseover',function(e){var t=e.target.closest&&e.target.closest('.tag'); t?showTip(t):hideTip()});
+  document.addEventListener('focusin',function(e){if(e.target.classList&&e.target.classList.contains('tag'))showTip(e.target)});
+  document.addEventListener('focusout',hideTip);
+  document.addEventListener('scroll',hideTip,true);
+  window.addEventListener('dragover',function(e){e.preventDefault()});
+  window.addEventListener('drop',function(e){e.preventDefault()});
+  window.addEventListener('hashchange',route);
+  refreshState().then(function(){if(!location.hash&&state.initial)location.hash='case='+encodeURIComponent(state.initial);else route()});
+})();
+</script>
+</body>
+</html>

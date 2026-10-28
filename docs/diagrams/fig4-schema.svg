@@ -1,0 +1,82 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1240' height='690' viewBox='0 0 1240 690'>
+<defs><marker id='a' markerWidth='10' markerHeight='8' refX='9' refY='4' orient='auto'><path d='M0,0 L10,4 L0,8 z' fill='#333'/></marker></defs>
+<rect width='100%' height='100%' fill='white'/>
+<text x='620' y='30' font-family='Helvetica, Arial, sans-serif' font-size='20' font-weight='bold' fill='#111' text-anchor='middle'>Figure 4. Artifact sources mapped to the common record schema</text>
+<rect x='40' y='60' width='300' height='70' rx='3' fill='#fff7e6' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='73.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Chrome History</text>
+<text x='190' y='90.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>visits + urls</text>
+<text x='190' y='107.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>keyword_search_terms</text>
+<text x='190' y='124.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>downloads + url_chains</text>
+<line x1='340' y1='95' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='140' width='300' height='38' rx='3' fill='#fff7e6' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='154.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Chrome Bookmarks</text>
+<text x='190' y='171.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>roots.*.children (JSON)</text>
+<line x1='340' y1='159' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='188' width='300' height='38' rx='3' fill='#fff7e6' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='202.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Chrome Cookies</text>
+<text x='190' y='219.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>cookies (value encrypted)</text>
+<line x1='340' y1='207' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='236' width='300' height='38' rx='3' fill='#fff7e6' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='250.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Chrome Cache</text>
+<text x='190' y='267.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>Simple Cache *_0 headers</text>
+<line x1='340' y1='255' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='284' width='300' height='70' rx='3' fill='#fff0f0' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='297.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Firefox places.sqlite</text>
+<text x='190' y='314.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>moz_historyvisits + moz_places</text>
+<text x='190' y='331.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>moz_bookmarks</text>
+<text x='190' y='348.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>moz_annos downloads/*</text>
+<line x1='340' y1='319' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='364' width='300' height='38' rx='3' fill='#fff0f0' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='378.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Firefox cookies.sqlite</text>
+<text x='190' y='395.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>moz_cookies (plaintext)</text>
+<line x1='340' y1='383' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='412' width='300' height='38' rx='3' fill='#fff0f0' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='426.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Firefox formhistory.sqlite</text>
+<text x='190' y='443.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>moz_formhistory</text>
+<line x1='340' y1='431' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='460' width='300' height='38' rx='3' fill='#fff0f0' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='474.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Firefox cache2</text>
+<text x='190' y='491.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>entries/* metadata</text>
+<line x1='340' y1='479' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='508' width='300' height='38' rx='3' fill='#fdecea' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='522.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Free space of History / places.sqlite</text>
+<text x='190' y='539.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>freelist, freeblocks, slack, WAL, journal</text>
+<line x1='340' y1='527' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='40' y='556' width='300' height='38' rx='3' fill='#fff1e0' stroke='#334' stroke-width='1.2'/>
+<text x='190' y='570.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Memory capture</text>
+<text x='190' y='587.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>private page records, cached history pages</text>
+<line x1='340' y1='575' x2='470' y2='300' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<rect x='470' y='170' width='300' height='340' rx='3' fill='#e8f0fe' stroke='#334' stroke-width='1.2'/>
+<text x='620' y='233.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='bold' fill='#111' text-anchor='middle'>Record</text>
+<text x='620' y='250.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'></text>
+<text x='620' y='267.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>browser: chrome | firefox</text>
+<text x='620' y='284.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>artifact_type: history | search | bookmark |</text>
+<text x='620' y='301.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>  cookie | download | form | cache |</text>
+<text x='620' y='318.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>  deleted_history | deleted_search |</text>
+<text x='620' y='335.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>  private_history | private_search</text>
+<text x='620' y='352.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>url: str</text>
+<text x='620' y='369.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>title: str</text>
+<text x='620' y='386.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>timestamp_utc: YYYY-MM-DDTHH:MM:SSZ</text>
+<text x='620' y='403.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>raw_timestamp: int (as stored)</text>
+<text x='620' y='420.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>timestamp_source: column and unit</text>
+<text x='620' y='437.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>source_file: path inside evidence</text>
+<text x='620' y='454.0' font-family='Helvetica, Arial, sans-serif' font-size='12' font-weight='normal' fill='#111' text-anchor='middle'>extra: dict (tag, tag_source, flags...)</text>
+<rect x='880' y='90' width='300' height='60' rx='3' fill='#eef5ee' stroke='#334' stroke-width='1.2'/>
+<text x='1030' y='115.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='bold' fill='#111' text-anchor='middle'>records.json</text>
+<text x='1030' y='133.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='normal' fill='#111' text-anchor='middle'>sorted by time, with counts</text>
+<rect x='880' y='200' width='300' height='60' rx='3' fill='#eef5ee' stroke='#334' stroke-width='1.2'/>
+<text x='1030' y='225.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='bold' fill='#111' text-anchor='middle'>Web UI</text>
+<text x='1030' y='243.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='normal' fill='#111' text-anchor='middle'>search, filter, timeline, detail</text>
+<rect x='880' y='310' width='300' height='60' rx='3' fill='#eef5ee' stroke='#334' stroke-width='1.2'/>
+<text x='1030' y='335.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='bold' fill='#111' text-anchor='middle'>CSV / JSON export</text>
+<text x='1030' y='353.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='normal' fill='#111' text-anchor='middle'>extra flattened as JSON text</text>
+<rect x='880' y='420' width='300' height='60' rx='3' fill='#eef5ee' stroke='#334' stroke-width='1.2'/>
+<text x='1030' y='445.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='bold' fill='#111' text-anchor='middle'>Unit tests</text>
+<text x='1030' y='463.0' font-family='Helvetica, Arial, sans-serif' font-size='13' font-weight='normal' fill='#111' text-anchor='middle'>synthetic profiles, expected records</text>
+<line x1='770' y1='300' x2='880' y2='120' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<line x1='770' y1='300' x2='880' y2='230' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<line x1='770' y1='300' x2='880' y2='340' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<line x1='770' y1='300' x2='880' y2='450' stroke='#333' stroke-width='1.3' marker-end='url(#a)'/>
+<text x='620' y='650' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#444' text-anchor='middle' font-weight='normal'>Timestamps: Chrome = microseconds since 1601-01-01; Firefox = microseconds since 1970-01-01;</text>
+<text x='620' y='668' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#444' text-anchor='middle' font-weight='normal'>cookie expiry in seconds, download end in milliseconds, cache2 header in seconds. All converted to UTC.</text>
+</svg>
